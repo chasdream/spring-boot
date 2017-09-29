@@ -1,4 +1,4 @@
-# SpringBoot学习笔记
+# SpringBoot
 
 1.springBoot简介
 
@@ -168,7 +168,7 @@ application-dev.properties:
     spring.redis.pool.min-idle=0
     spring.redis.timeout=0
 
-4.3 实例
+4.3 代码示例
 
     @Repository
     public class RedisUtils {
@@ -217,7 +217,7 @@ application-dev.properties:
 
     spring.data.mongodb.uri=mongodb://name:pass@localhost:27017/dbname
 
-5.3 实例
+5.3 代码示例
 
 dao层继承MongoRepository<Shirt, String>接口，此接口中有几个crud接口。也可以自定义查询方法需要严格按照mongodb存入的字段进行对应，例如：字段名称model，方法名称findByModel
 
@@ -325,4 +325,181 @@ consumer:
 
 <font color=#FF0000>注：通过@KafkaListener(topics = {"topics1", "topics2", ...})配置监听多个topic</font>
 
+7.定时任务
+
+7.1 springBoot创建定时任务方式：
+
+- 在程序入口加上@EnableScheduling注解
+- 在定时方法上加上@Scheduled注解
+
+7.2 代码示例
+
+    @Component
+    public class ScheduledTask {
+
+        /**上一次开始执行时间点之后3s再执行*/
+        @Scheduled(fixedRate = 3000)
+        public void scheduled() {
+            System.out.println("currentTime: " + System.currentTimeMillis());
+        }
+    }
+
+<font color=#FF0000>注：@Scheduled注解说明</font>
+- @Scheduled(fixedRate = 3000): 上一次开始执行时间点之后3s再执行
+- @Scheduled(fixedDelay = 3000): 上一次执行时间点完成之后3s再执行
+- @Scheduled(initialDelay=1000, fixedRate=3000) ：应用启动延迟1秒后执行，之后按fixedRate的规则每3秒执行一次
+- @Scheduled(cron = "0 42 14 * * ? ") ：通过cron表达式定义规则执行，该规则表示14点42分执行
+
+8.springBoot集成JMS
+
+8.1 配置pom依赖
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-mail</artifactId>
+        <version>1.5.7.RELEASE</version>
+    </dependency>
+
+8.2 jms配置文件
+
+    #配置JMS
+    spring.mail.host=smtp.163.com
+    spring.mail.username=example@163.com
+    spring.mail.password=
+    spring.mail.port=25
+    spring.mail.protocol=smtp
+    spring.mail.default-encoding=UTF-8
+    spring.mail.properties.mail.smtp.auth=true
+    spring.mail.properties.mail.smtp.starttls.enable=true
+    spring.mail.properties.mail.smtp.starttls.required=true
+
+<font color=#FF0000>注：</font>
+
+> qq邮箱需要删除spring.mail.port
+
+> qq邮箱spring.mail.password的值为qq邮箱提供的授权码
+
+8.3 代码示例
+
+    @Service
+    public class MailServiceImpl implements MailService {
+
+        @Autowired
+        private JavaMailSenderImpl sender;
+
+        @Override
+        public void sendEmail() throws MessagingException {
+            MimeMessage mimeMessage = sender.createMimeMessage();
+            //multipart模式
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "utf-8");
+            helper.setTo(new String[]{"example@qq.com"});//收件人
+            helper.setFrom("example@qq.com");//发件人
+            helper.setSubject("SpringBoot测试邮件发送");
+
+            StringBuilder sBuilder = new StringBuilder();
+            sBuilder.append("<a href=\"www.baidu.com\">测试邮件</a>");
+
+            //cid默认写法，imageId用于标识内嵌图片
+            sBuilder.append("<img src=\"cid:imageId\"/>");
+
+            FileSystemResource inlineImg = new FileSystemResource(new File("F:\\0001.jpg"));
+            helper.addInline("imageId", inlineImg);//内嵌图片，设置imageId
+
+            helper.setText(sBuilder.toString(), true);//开启html
+
+            //设置附件
+            FileSystemResource attachmentImg = new FileSystemResource(new File("F:\\0001.jpg"));
+            helper.addAttachment("attachment.jpg", attachmentImg);
+
+            sender.send(mimeMessage);//发送邮件
+        }
+    }
+
+9.springBoot集成dubbo接口
+
+9.1 配置pom依赖
+
+    <dependency>
+        <groupId>com.alibaba</groupId>
+        <artifactId>dubbo</artifactId>
+        <version>2.5.5</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.zookeeper</groupId>
+        <artifactId>zookeeper</artifactId>
+        <version>3.4.8</version>
+    </dependency>
+    <dependency>
+        <groupId>com.101tec</groupId>
+        <artifactId>zkclient</artifactId>
+        <version>0.9</version>
+    </dependency>
+
+9.2 配置provider spring-dubbo-provider.xml
+
+deploy-config.properties：
+
+    ####配置dubbo provider####
+    #配置zookeeper
+    provider.registry.address=zookeeper://127.0.0.1:2181
+    provider.port=20881
+    #限制服务端接受的总连接数
+    provider.accepts=1000
+    #服务端的group
+    provider.service.group=spring-boot-dev
+    #服务端的版本
+    provider.service.version=1.0.0
+    #服务端的超时时间，单位：毫秒
+    provider.service.timeout=30000
+
+spring-dubbo-provider.xml：
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+        <context:property-placeholder location="classpath:deploy-config.properties" ignore-unresolvable="true"/>
+
+        <dubbo:application name="spring-boot" owner="spring-boot" organization="spring-boot"/>
+        <dubbo:registry address="${provider.registry.address}" protocol="zookeeper"/>
+        <dubbo:protocol name="dubbo" port="${provider.port}" serialization="hessian2" accepts="${provider.accepts}" accesslog="true"/>
+
+        <dubbo:service interface="com.spring.boot.facade.PersonFacade" ref="personFacade"
+                       group="${provider.service.group}" version="${provider.service.version}" timeout="${provider.service.timeout}"/>
+    </beans>
+
+9.3 配置consumer spring-dubbo-consumer.xml
+
+deploy-config.properties：
+
+    ####配置dubbo consumer####
+    consumer.registry.address=127.0.0.1:2181
+    #服务端的group
+    consumer.service.group=spring-boot-dev
+    #服务端的版本
+    consumer.service.version=1.0.0
+
+spring-dubbo-consumer.xml:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <beans xmlns="http://www.springframework.org/schema/beans"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+           xmlns:context="http://www.springframework.org/schema/context"
+           xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+        <context:component-scan base-package="com.spring.boot"/>
+        <context:property-placeholder location="classpath*:deploy-config.properties" ignore-unresolvable="true"/>
+
+        <dubbo:registry id="bootRegistry" address="${consumer.registry.address}" protocol="zookeeper" client="curator"  default="true"/>
+    </beans>
+
+<font color=#FF0000>注：在程序入口(Application.java)加入@ImportResource({"classpath:spring-dubbo-provider.xml", "classpath:spring-dubbo-consumer.xml"})注解</font>
 

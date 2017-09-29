@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.spring.boot.mapping.PersonMapper">
+    <resultMap id="BaseResultMap" type="com.spring.boot.bean.Person">
+        <result column="id" property="id" jdbcType="SMALLINT"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="count" property="count" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.spring.boot.bean.Person">
+        INSERT INTO person(name, count) values(#{name}, #{count})
+    </insert>
+
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM person
+    </select>
+
+    <select id="selectByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        SELECT * FROM person where name = #{name}
+    </select>
+</mapper>

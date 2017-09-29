@@ -1,6 +1,0 @@
-index:
-  name: black
-
-spring:
-  profiles:
-    active: dev

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:dubbo-provider.properties" ignore-unresolvable="true"/>
+
+    <dubbo:application name="spring-boot" owner="spring-boot" organization="spring-boot"/>
+    <dubbo:registry address="${provider.registry.address}" protocol="zookeeper"/>
+    <dubbo:protocol name="dubbo" port="${provider.port}" serialization="hessian2" accepts="${provider.accepts}" accesslog="true"/>
+    
+    <dubbo:service interface="com.spring.boot.facade.PersonFacade" ref="personFacade"
+                   group="${provider.service.group}" version="${provider.service.version}" timeout="${provider.service.timeout}"/>
+</beans>
