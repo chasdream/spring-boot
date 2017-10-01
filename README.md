@@ -544,7 +544,7 @@ spring-dubbo-consumer.xml:
         </plugins>
     </build>
 
-10. springBoot集成log4j
+10.springBoot集成log4j
 
 10.1 排除springBoot的log jar包
 
