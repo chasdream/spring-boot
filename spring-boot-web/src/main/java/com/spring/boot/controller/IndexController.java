@@ -6,7 +6,7 @@
  * Version: 1.0
  * Date: 
  */
-package com.spring.boot.controller.index;
+package com.spring.boot.controller;
 
 import com.spring.boot.bean.ApplicationBean;
 import com.spring.boot.bean.IndexBean;

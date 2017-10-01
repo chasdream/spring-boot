@@ -503,3 +503,97 @@ spring-dubbo-consumer.xml:
 
 <font color=#FF0000>注：在程序入口(Application.java)加入@ImportResource({"classpath:spring-dubbo-provider.xml", "classpath:spring-dubbo-consumer.xml"})注解</font>
 
+**`异常解决`**
+
+<font color=#FF0000>多module package异常问题解决方案：</font>
+
+在parent的pom.xml文件中增加如下代码：
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.spring.boot.SpringBootWebApplication</mainClass>
+                    <layout>ZIP</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+    
+
+在被依赖的子module中添加：
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+10. springBoot集成log4j
+
+10.1 排除springBoot的log jar包
+
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <!--排除spring-boot-starter-logging-->
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-logging</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    
+10.2 增加log4j相关的jar包
+
+    <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.17</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.21</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.21</version>
+    </dependency>
+
+10.3 增加log4j配置文件
+
+log4j.properties:
+    
+    log4j.rootLogger=INFO,Console,File
+    
+    log4j.appender.Console=org.apache.log4j.ConsoleAppender
+    log4j.appender.Console.Target=System.out
+    log4j.appender.Console.layout = org.apache.log4j.PatternLayout
+    log4j.appender.Console.layout.ConversionPattern=[%c] - %m%n
+    
+    log4j.appender.File = org.apache.log4j.RollingFileAppender
+    log4j.appender.File.File = logs/ssm.log
+    log4j.appender.File.MaxFileSize = 10MB
+    log4j.appender.File.Threshold = ALL
+    log4j.appender.File.layout = org.apache.log4j.PatternLayout
+    log4j.appender.File.layout.ConversionPattern =[%p] [%d{yyyy-MM-dd HH\:mm\:ss}][%c]%m%n
+
+
