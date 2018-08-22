@@ -48,4 +48,19 @@
 
     在springBoot启动类上增加排除数据库自动配置相关类，如：@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class}) 	
     	
+异常二：springBoot利用com.alibaba.dubbo.config.RegistryConfig类进行dubbo的zk集群配置方式如下：
+
+    dubbo:
+      application:
+        name: test
+        zkAddress: 'zookeeper://xxx.xxx.xxx.xxx:2181|zookeeper://xxx.xxx.xxx.xxx:2181|zookeeper://xxx.xxx.xxx.xxx:2181'
+        providerGroup: 'test-dev'
+        providerVersion: '1.0.0'
+      consumer:
+        cashloan:
+          group: 'xxx-dev'
+          version: '1.0.0'
+
+    
+
     	
